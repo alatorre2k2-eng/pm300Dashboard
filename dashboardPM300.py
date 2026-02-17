@@ -70,20 +70,76 @@ with col_left:
 # Divider
 with col_mid:
     st.markdown('<div class="vertical-line"></div>', unsafe_allow_html=True)
-
 # =========================
 # SECOND PARTIAL
 # =========================
 with col_right:
     st.markdown('<div class="right-panel">', unsafe_allow_html=True)
-
     st.markdown("## 🟩 Second Partial")
 
-    p2_class = st.number_input("Class Activities + Quick Exams (20%)", 0.0, 100.0, key="p2_class")
-    p2_formative = st.number_input("Formative & Collaborative Activities (10%)", 0.0, 100.0, key="p2_formative")
-    p2_inter = st.number_input("Interpartial Exam (20%)", 0.0, 100.0, key="p2_inter")
-    p2_exam = st.number_input("Partial Exam (50%)", 0.0, 100.0, key="p2_exam")
+    # ---------- TARGET CALCULATION FIRST ----------
+    target_p2 = st.number_input(
+        "Desired Partial 2 Grade",
+        min_value=60.0,
+        max_value=100.0,
+        value=70.0,
+        step=1.0,
+        key="target_p2"
+    )
 
+    # Get existing values safely (default 0 if not yet set)
+    p2_class_val = st.session_state.get("p2_class", 0.0)
+    p2_formative_val = st.session_state.get("p2_formative", 0.0)
+
+    current_p2_contribution = 0.20 * p2_class_val + 0.10 * p2_formative_val
+    remaining_p2_weight = 0.70
+
+    required_p2_score = (target_p2 - current_p2_contribution) / remaining_p2_weight
+    required_p2_score = max(0, min(100, required_p2_score))
+
+    if required_p2_score <= 0:
+        st.success("✅ You already secured this Partial 2 grade.")
+    elif required_p2_score > 100:
+        st.error("❗ Even scoring 100 on remaining exams will not reach this target.")
+    else:
+        st.info(
+            f"If you perform equally on Interpartial and Partial Exam, "
+            f"you need approximately **{required_p2_score:.2f}** on each."
+        )
+
+        if st.button("Autofill Partial 2 Balanced Scores"):
+            st.session_state["p2_inter"] = required_p2_score
+            st.session_state["p2_exam"] = required_p2_score
+            st.rerun()
+
+    st.markdown("---")
+
+    # ---------- NOW CREATE INPUT WIDGETS ----------
+    p2_class = st.number_input(
+        "Class Activities + Quick Exams (20%)",
+        0.0, 100.0,
+        key="p2_class"
+    )
+
+    p2_formative = st.number_input(
+        "Formative & Collaborative Activities (10%)",
+        0.0, 100.0,
+        key="p2_formative"
+    )
+
+    p2_inter = st.number_input(
+        "Interpartial Exam (20%)",
+        0.0, 100.0,
+        key="p2_inter"
+    )
+
+    p2_exam = st.number_input(
+        "Partial Exam (50%)",
+        0.0, 100.0,
+        key="p2_exam"
+    )
+
+    # ---------- TOTAL ----------
     p2_total = (
         0.20 * p2_class +
         0.10 * p2_formative +
@@ -94,7 +150,6 @@ with col_right:
     st.divider()
     st.metric("Second Partial Grade", f"{p2_total:.2f}")
 
-    # Performance feedback
     if p2_total >= 90:
         st.success("🔥 Excellent performance! Keep it up.")
     elif p2_total >= 70:
@@ -104,11 +159,54 @@ with col_right:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+
 # ==========================================================
 # FINAL GRADE SECTION
 # ==========================================================
-
+#-----------------------------------autofill
 st.markdown("---")  # Horizontal line
+
+st.markdown("---")
+st.subheader("🎯 Balanced Target Strategy")
+
+target_grade = st.number_input(
+    "Desired Final Course Grade",
+    min_value=60.0,
+    max_value=100.0,
+    value=70.0,
+    step=1.0
+)
+
+# Current contribution from partials + fixed components
+current_contribution = (
+    0.28 * p1_total +
+    0.26 * p2_total +
+    0.08 * st.session_state.get("final_class", 0.0) +
+    0.04 * st.session_state.get("final_formative", 0.0)
+)
+
+# Remaining weight ONLY exam-type components
+remaining_weight = 0.34  # 4% interpartial + 30% final exam
+
+required_score = (target_grade - current_contribution) / remaining_weight
+required_score = max(0, min(100, required_score))
+
+if remaining_weight > 0:
+    if required_score <= 0:
+        st.success("✅ You already secured this final grade.")
+    elif required_score > 100:
+        st.error("❗ Even scoring 100 on remaining exams will not reach this target.")
+    else:
+        st.info(
+            f"If you perform equally on Final Interpartial and Final Exam, "
+            f"you need approximately **{required_score:.2f}** on each."
+        )
+
+if st.button("Autofill Final Exam Targets"):
+    st.session_state.final_interpartial = required_score
+    st.session_state.final_exam = required_score
+    st.rerun()
+
 
 st.header("🎓 FINAL COURSE GRADE")
 
@@ -119,30 +217,33 @@ col_final1, col_final2 = st.columns(2)
 with col_final1:
     final_interpartial = st.number_input(
         "Final Interpartial Exam (4%)",
-        0.0, 100.0, key="final_interpartial"
+        0.0, 100.0,
+        key="final_interpartial",
     )
 
     final_class = st.number_input(
         "Final Class Activities + Quick Exams (8%)",
-        0.0, 100.0, key="final_class"
+        0.0, 100.0,
+        key="final_class",
     )
-
 with col_final2:
     final_formative = st.number_input(
         "Final Formative & Collaborative Activities (4%)",
-        0.0, 100.0, key="final_formative"
+        0.0, 100.0,
+        key="final_formative",
     )
+
 
     final_exam = st.number_input(
         "Final Exam (30%)",
-        0.0, 100.0, key="final_exam"
+        0.0, 100.0,
+        key="final_exam",
     )
-
 # ------------------------
 # FINAL GRADE CALCULATION
 # ------------------------
 
-final_grade = (
+final_grade = round(
     0.28 * p1_total +
     0.26 * p2_total +
     0.04 * final_interpartial +
@@ -150,6 +251,11 @@ final_grade = (
     0.04 * final_formative +
     0.30 * final_exam
 )
+
+
+#-------------------------------------
+
+
 
 st.markdown("## 🏆 FINAL GRADE")
 
