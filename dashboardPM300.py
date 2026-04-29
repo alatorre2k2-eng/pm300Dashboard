@@ -70,9 +70,6 @@ with col_right:
     )
 
     st.divider()
-    st.metric("First Partial Grade", f"{p1_total:.2f}")
-
-    st.divider()
     st.metric("Second Partial Grade", f"{p2_total:.2f}")
 
     if p2_total >= 90:
