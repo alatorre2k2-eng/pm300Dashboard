@@ -60,33 +60,17 @@ with col_mid:
 with col_right:
     st.markdown("## 🟩 Second Partial")
 
-    p2_class = st.number_input(
-        "Class Activities + Quick Exams (20%)",
-        0.0, 100.0,
-        key="p2_class"
-    )
-    p2_formative = st.number_input(
-        "Formative & Collaborative Activities (10%)",
-        0.0, 100.0,
-        key="p2_formative"
-    )
-    p2_inter = st.number_input(
-        "Interpartial Exam (20%)",
-        0.0, 100.0,
-        key="p2_inter"
-    )
-    p2_exam = st.number_input(
-        "Partial Exam (50%)",
-        0.0, 100.0,
-        key="p2_exam"
+    p2_total = st.number_input(
+        "Second Partial Grade",
+        min_value=0.0,
+        max_value=100.0,
+        value=0.0,
+        step=0.01,
+        key="p2_total"
     )
 
-    p2_total = (
-        0.20 * p2_class +
-        0.10 * p2_formative +
-        0.20 * p2_inter +
-        0.50 * p2_exam
-    )
+    st.divider()
+    st.metric("First Partial Grade", f"{p1_total:.2f}")
 
     st.divider()
     st.metric("Second Partial Grade", f"{p2_total:.2f}")
